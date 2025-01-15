@@ -239,120 +239,7 @@ void gui::EndRender() noexcept
 	if (result == D3DERR_DEVICELOST && device->TestCooperativeLevel() == D3DERR_DEVICENOTRESET)
 		ResetDevice();
 }
-void gui::taskList() noexcept
-{
-	std::vector<std::string> allTasks = globals::tasks;
-	allTasks.insert(
-		allTasks.end(),
-		std::make_move_iterator(globals::tasksCompleted.begin()),
-		std::make_move_iterator(globals::tasksCompleted.end())
-	);
-	bool isNotEmpty = false;
-	globals::tasks = FileSys::loadFile("\\teevToDoList\\tasks.txt");
-	globals::tasksCompleted = FileSys::loadFile("\\teevToDoList\\complete.txt");
-
-	for (size_t index = 0; index < allTasks.size(); ++index) {
-		const std::string& task = allTasks[index];
-		bool isCompleted = std::find(globals::tasksCompleted.begin(), globals::tasksCompleted.end(), task) != globals::tasksCompleted.end();
-		std::string buttonLabel;
-		if (isCompleted) { buttonLabel = "-"; }
-		else { buttonLabel = "="; }
-		buttonLabel += "###" + std::to_string(index);
-
-		ImGui::PushFont(globals::iconFont);
-
-		if (ImGui::Button(buttonLabel.c_str(), ImVec2(40, 40))) {
-			if (isCompleted) {
-				globals::tasksCompleted.erase(remove(globals::tasksCompleted.begin(), globals::tasksCompleted.end(), task), globals::tasksCompleted.end());
-				globals::tasks.push_back(task);
-			}
-			else {
-				globals::tasks.erase(remove(globals::tasks.begin(), globals::tasks.end(), task), globals::tasks.end());
-				globals::tasksCompleted.push_back(task);
-			}
-
-			FileSys::saveFile(globals::tasks, "\\teevToDoList\\tasks.txt");
-			FileSys::saveFile(globals::tasksCompleted, "\\teevToDoList\\complete.txt");
-		}
-		ImGui::PopFont();
-		ImGui::SameLine();
-		if (isCompleted) {
-			if(ImGui::StrikeThroughButton((task + "###Completed" + std::to_string(index)).c_str())) {
-				globals::tasksCompleted.erase(remove(globals::tasksCompleted.begin(), globals::tasksCompleted.end(), task), globals::tasksCompleted.end());;
-				FileSys::saveFile(globals::tasks, "\\teevToDoList\\tasks.txt");
-				FileSys::saveFile(globals::tasksCompleted, "\\teevToDoList\\complete.txt");
-			}
-		}
-		else {
-			ImGui::Text("%s", task.c_str());
-		}
-		ImGui::PushFont(globals::iconFont);
-
-		if (index == 0) {
-			ImGui::SameLine(ImGui::GetWindowWidth() - 60);
-			if (ImGui::Button("+"))
-				globals::screen = 1;
-			isNotEmpty = true;
-		}
-		ImGui::PopFont();
-
-	}
-	ImGui::PushFont(globals::iconFont);
-	if (!isNotEmpty) {
-		ImGui::SameLine(ImGui::GetWindowWidth() - 60);
-		if (ImGui::Button("+"))
-			globals::screen = 1;
-		isNotEmpty = true;
-	}
-	ImGui::PopFont();
-}
-void gui::strikeThroughText(const std::string& text) {
-	ImVec2 pos = ImGui::GetCursorScreenPos();
-	ImVec2 size = ImGui::CalcTextSize(text.c_str());
-
-	ImGui::PushStyleColor(ImGuiCol_Text, ImVec4(0.95, 0.95, 0.95, 1.0));
-	ImGui::TextUnformatted(text.c_str());
-	ImGui::PopStyleColor();
-
-	float lineOffset = size.y * 0.7f;  // Adjust this to move the line lower
-	float lineThickness = 1.0f;        // Adjust this for line thickness
-	float lineExtension = 5.0f;        // Extend the line length slightly
-
-	ImGui::GetWindowDrawList()->AddLine(
-		ImVec2(pos.x, pos.y + lineOffset),
-		ImVec2(pos.x + size.x + lineExtension, pos.y + lineOffset),
-		ImColor(255, 255, 255),
-		lineThickness);
-}
-void gui::addTaskScreen() noexcept
-{
-	if (ImGui::Button("cancel"))
-		globals::screen = 0;
-	ImGui::InputText("##taskName", &globals::taskName);
-	ImGui::SameLine();
-	ImGui::PushFont(globals::iconFont);
-	if (ImGui::Button("+")) {
-		globals::tasks.push_back(globals::taskName);
-		FileSys::saveFile(globals::tasks, "\\teevToDoList\\tasks.txt");
-		FileSys::saveFile(globals::tasksCompleted, "\\teevToDoList\\complete.txt");
-		globals::taskName = "";
-		globals::screen = 0;
-	}
-	ImGui::PopFont();
-}
-void gui::Render() noexcept
-{
-	ImGui::SetNextWindowPos({ 0, 0 });
-	ImGui::SetNextWindowSize({ WIDTH, HEIGHT });
-	ImGui::Begin(
-		"todo list",
-		&isRunning,
-		ImGuiWindowFlags_NoResize |
-		ImGuiWindowFlags_NoSavedSettings |
-		ImGuiWindowFlags_NoCollapse |
-		ImGuiWindowFlags_NoMove |
-		ImGuiWindowFlags_NoTitleBar
-	);
+void gui::applyStyles() {
 	ImVec4 transparent = ImVec4(0.0, 0.0, 0.0, 0.0);
 	ImGuiStyle& style = ImGui::GetStyle();
 	style.WindowRounding = 20;
@@ -391,6 +278,114 @@ void gui::Render() noexcept
 	style.Colors[ImGuiCol_ScrollbarGrabActive] = transparent;
 	style.Colors[ImGuiCol_ScrollbarGrabHovered] = transparent;
 
+}
+void gui::taskList() noexcept
+{
+	std::vector<std::string> allTasks = globals::tasks;
+	allTasks.insert(
+		allTasks.end(),
+		std::make_move_iterator(globals::tasksCompleted.begin()),
+		std::make_move_iterator(globals::tasksCompleted.end())
+	);//combine all tasks for iteration purposes
+	bool isNotEmpty = false;
+	globals::tasks = FileSys::loadFile("\\teevToDoList\\tasks.txt");
+	globals::tasksCompleted = FileSys::loadFile("\\teevToDoList\\complete.txt");
+
+	for (size_t index = 0; index < allTasks.size(); ++index) {
+		const std::string& task = allTasks[index];
+
+		//checks if the current task is checked as completed
+		bool isCompleted = std::find(globals::tasksCompleted.begin(), globals::tasksCompleted.end(), task) != globals::tasksCompleted.end();
+
+		std::string buttonLabel;
+		//diffrent char's based on task status
+		if (isCompleted) { buttonLabel = "-"; }
+		else { buttonLabel = "="; }
+		buttonLabel += "###" + std::to_string(index);
+
+		ImGui::PushFont(globals::iconFont); //render button char's as icons
+		if (ImGui::Button(buttonLabel.c_str(), ImVec2(40, 40))) {//change the state of a task
+			if (isCompleted) {
+				globals::tasksCompleted.erase(remove(globals::tasksCompleted.begin(), globals::tasksCompleted.end(), task), globals::tasksCompleted.end());
+				globals::tasks.push_back(task);
+			}
+			else {
+				globals::tasks.erase(remove(globals::tasks.begin(), globals::tasks.end(), task), globals::tasks.end());
+				globals::tasksCompleted.push_back(task);
+			}
+
+			FileSys::saveFile(globals::tasks, "\\teevToDoList\\tasks.txt");
+			FileSys::saveFile(globals::tasksCompleted, "\\teevToDoList\\complete.txt");
+		}
+		ImGui::PopFont();//return to default font
+
+		ImGui::SameLine();//render the text next to the button
+		if (isCompleted) {
+			//create a button with strikethrough text using a modified ImGui:;Button method
+			if(ImGui::StrikeThroughButton((task + "###Completed" + std::to_string(index)).c_str())) {
+				//delete the complete task once it has been clicked on
+				globals::tasksCompleted.erase(remove(globals::tasksCompleted.begin(), globals::tasksCompleted.end(), task), globals::tasksCompleted.end());;
+				FileSys::saveFile(globals::tasks, "\\teevToDoList\\tasks.txt");
+				FileSys::saveFile(globals::tasksCompleted, "\\teevToDoList\\complete.txt");
+			}
+		}
+		else {
+			ImGui::Text("%s", task.c_str());
+		}
+		ImGui::PushFont(globals::iconFont);
+
+		//render the add task button aligned to the right top corner of the window, if there are tasks
+		if (index == 0) {
+			ImGui::SameLine(ImGui::GetWindowWidth() - 60);
+			if (ImGui::Button("+"))
+				globals::screen = 1;
+			isNotEmpty = true;
+		}
+		ImGui::PopFont();
+
+	}
+	ImGui::PushFont(globals::iconFont);
+	//render the add task button if there are no tasks
+	if (!isNotEmpty) {
+		ImGui::SameLine(ImGui::GetWindowWidth() - 60);
+		if (ImGui::Button("+"))
+			globals::screen = 1;
+		isNotEmpty = true;
+	}
+	ImGui::PopFont();
+}
+void gui::addTaskScreen() noexcept
+{
+	if (ImGui::Button("cancel"))
+		globals::screen = 0;
+	ImGui::InputText("##taskName", &globals::taskName);
+	ImGui::SameLine();
+	ImGui::PushFont(globals::iconFont);
+	if (ImGui::Button("+")) {
+		globals::tasks.push_back(globals::taskName);
+		FileSys::saveFile(globals::tasks, "\\teevToDoList\\tasks.txt");
+		FileSys::saveFile(globals::tasksCompleted, "\\teevToDoList\\complete.txt");
+		globals::taskName = "";
+		globals::screen = 0;
+	}
+	ImGui::PopFont();
+}
+void gui::Render() noexcept
+{
+	gui::applyStyles();
+
+	ImGui::SetNextWindowPos({ 0, 0 });
+	ImGui::SetNextWindowSize({ WIDTH, HEIGHT });
+	ImGui::Begin(
+		"teev's todo list",
+		&isRunning,
+		ImGuiWindowFlags_NoResize |
+		ImGuiWindowFlags_NoSavedSettings |
+		ImGuiWindowFlags_NoCollapse |
+		ImGuiWindowFlags_NoMove |
+		ImGuiWindowFlags_NoTitleBar
+	);
+	//get user's appdata folder
 	char* buffer = nullptr;
 	size_t bufferSize = 0;
 	if (_dupenv_s(&buffer, &bufferSize, "APPDATA") == 0 && buffer != nullptr) {
@@ -398,8 +393,6 @@ void gui::Render() noexcept
 		free(buffer);
 	}
 	else { globals::screen = -1; }
-
-	//ImGui::ShowStyleEditor();
 
 	switch (globals::screen)
 	{
@@ -409,8 +402,11 @@ void gui::Render() noexcept
 	case 1:
 		gui::addTaskScreen();
 		break;
+	case -1:
+		ImGui::Text("could not gett APPDATA! error: -1");
+		break;
 	default:
-		ImGui::Text("an error has occured");
+		ImGui::Text("an unknown error has occured");
 		break;
 	}
 

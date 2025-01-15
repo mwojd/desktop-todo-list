@@ -44,7 +44,5 @@ namespace gui
     void taskList() noexcept;
     void addTaskScreen() noexcept;
 
-    //custom imgui elements
-    void strikeThroughText(const std::string& text);
-    bool strikeThroughButton(const std::string& label);
+    void applyStyles();
 }

@@ -752,7 +752,7 @@ bool ImGui::StrikeThroughButtonEx(const char* label, const ImVec2& size_arg, ImG
     //    CloseCurrentPopup();
 
     // Draw strikethrough line
-    float lineOffset = label_size.y * 0.7f;  // Adjust this to move the line lower
+    float lineOffset = label_size.y * 0.6f;  // Adjust this to move the line lower
     float lineThickness = 1.0f;              // Adjust this for line thickness
     float lineExtension = 5.0f;              // Extend the line length slightly
 
