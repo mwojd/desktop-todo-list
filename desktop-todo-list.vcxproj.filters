@@ -90,4 +90,8 @@
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>
+  <ItemGroup>
+    <Font Include="fonts\Caveat-VariableFont_wght.ttf" />
+    <Font Include="fonts\teevtodolist.ttf" />
+  </ItemGroup>
 </Project>

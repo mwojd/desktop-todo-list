@@ -179,7 +179,7 @@ void gui::CreateImGui() noexcept
 	ImGui::CreateContext();
 	ImGuiIO& io = ::ImGui::GetIO();
 	ImFont* defaultFont = io.Fonts->AddFontFromFileTTF("C:\\Windows\\Fonts\\Caveat-VariableFont_wght.ttf", 30.0f);
-	globals::iconFont = io.Fonts->AddFontFromFileTTF("C:\\Windows\\Fonts\\teevtodolist1.ttf", 30.0f);
+	globals::iconFont = io.Fonts->AddFontFromFileTTF("C:\\Windows\\Fonts\\teevtodolist.ttf", 30.0f);
 	//ImFont* defaultFont = io.Fonts->AddFontFromFileTTF("app\\fonts\\Caveat-VariableFont_wght.ttf", 30.0f);
 	//globals::iconFont = io.Fonts->AddFontFromFileTTF("app\\fonts\\teevtodolist1.ttf", 30.0f);
 	io.IniFilename = NULL;
@@ -290,7 +290,8 @@ void gui::taskList() noexcept
 	bool isNotEmpty = false;
 	globals::tasks = FileSys::loadFile("\\teevToDoList\\tasks.txt");
 	globals::tasksCompleted = FileSys::loadFile("\\teevToDoList\\complete.txt");
-
+	ImGui::Columns(2, "###columns", false);
+	ImGui::SetColumnOffset(1, ImGui::GetWindowWidth() - 60);
 	for (size_t index = 0; index < allTasks.size(); ++index) {
 		const std::string& task = allTasks[index];
 
@@ -332,28 +333,28 @@ void gui::taskList() noexcept
 		else {
 			ImGui::Text("%s", task.c_str());
 		}
-		ImGui::PushFont(globals::iconFont);
-
-		//render the add task button aligned to the right top corner of the window, if there are tasks
-		if (index == 0) {
-			ImGui::SameLine(ImGui::GetWindowWidth() - 60);
-			if (ImGui::Button("+"))
-				globals::screen = 1;
-			isNotEmpty = true;
-		}
-		ImGui::PopFont();
 
 	}
+	ImGui::NextColumn();
 	ImGui::PushFont(globals::iconFont);
-	//render the add task button if there are no tasks
-	if (!isNotEmpty) {
-		ImGui::SameLine(ImGui::GetWindowWidth() - 60);
-		if (ImGui::Button("+"))
-			globals::screen = 1;
-		isNotEmpty = true;
-	}
+	if (ImGui::Button("+")) // button for adding a task
+				globals::screen = 1;
+	if (ImGui::Button("i")) // button for the information screen
+		globals::screen = 2;
+	if (ImGui::Button("x"))
+		isRunning = false;
 	ImGui::PopFont();
 }
+void gui::informationScreen() noexcept {
+	if (ImGui::Button("back"))
+		globals::screen = 0;
+	ImGui::Text("this program has been made by teev  /  mwojd");
+	ImGui::Text("you can reach me on discord by : te3v");
+	ImGui::Text("the code is available on ");
+	ImGui::SameLine();
+	if (ImGui::Button("github"))
+		ShellExecute(0, 0, "https://github.com/mwojd/desktop-todo-list", 0, 0, SW_SHOW);
+};
 void gui::addTaskScreen() noexcept
 {
 	if (ImGui::Button("cancel"))
@@ -401,6 +402,9 @@ void gui::Render() noexcept
 		break;
 	case 1:
 		gui::addTaskScreen();
+		break;
+	case 2:
+		gui::informationScreen();
 		break;
 	case -1:
 		ImGui::Text("could not gett APPDATA! error: -1");

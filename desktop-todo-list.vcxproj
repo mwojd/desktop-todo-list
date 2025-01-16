@@ -184,6 +184,10 @@
     <ClCompile Include="imgui\imgui_tables.cpp" />
     <ClCompile Include="imgui\imgui_widgets.cpp" />
   </ItemGroup>
+  <ItemGroup>
+    <Font Include="fonts\Caveat-VariableFont_wght.ttf" />
+    <Font Include="fonts\teevtodolist.ttf" />
+  </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
   </ImportGroup>

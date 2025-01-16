@@ -43,6 +43,7 @@ namespace gui
     // GUI functionalities
     void taskList() noexcept;
     void addTaskScreen() noexcept;
+    void informationScreen() noexcept;
 
     void applyStyles();
 }
